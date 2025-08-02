@@ -13,13 +13,22 @@ from .firecrawl import FirecrawlService
 
 class Workflow:
     def __init__(self):
+        from dotenv import load_dotenv
+        load_dotenv()
+
         # Configure Firecrawl (assumes FIRECRAWL_API_KEY is set in environment)
-        self.firecrawl = FirecrawlService()  # Ensure FirecrawlService uses fc-0c8e188b3f00406a9c80381dd6c34758
-        # Configure Gemini API
-        genai.configure(api_key="AIzaSyA7D3UfvFh6qhPtKYAiG13r0BspPVlCo4A")  # Or os.getenv("GEMINI_API_KEY")
+        self.firecrawl = FirecrawlService()
+
+        # Configure Gemini API securely
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        if not gemini_key:
+            raise ValueError("⚠️ GEMINI_API_KEY not found in environment variables.")
+        genai.configure(api_key=gemini_key)
+
         self.llm = genai.GenerativeModel("gemini-2.5-flash", generation_config={"temperature": 0.1})
         self.prompts = DeveloperToolsPrompts()
         self.workflow = self._build_workflow()
+
 
     def _build_workflow(self):
         graph = StateGraph(ResearchState)
